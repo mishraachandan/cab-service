@@ -6,33 +6,48 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalDateTime;
 
-@ControllerAdvice
-public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHandler {
+@RestControllerAdvice
+public class CustomizedResponseEntityHandler{
 
-    @ExceptionHandler(Exception.class)
-    public final ResponseEntity<ErrorDetails> handleAllException(Exception ex, WebRequest request) {
-        ErrorDetails errorDetails=new ErrorDetails(LocalDateTime.now(),
-                ex.getMessage(),request.getDescription(false));
-        return new ResponseEntity<ErrorDetails>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+//    @ExceptionHandler(Exception.class)
+//    public final ResponseEntity<ErrorDetails> handleAllException(Exception ex, WebRequest request) {
+//        ErrorDetails errorDetails=new ErrorDetails(LocalDateTime.now(),
+//                ex.getMessage(),request.getDescription(false));
+//        return new ResponseEntity<ErrorDetails>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+
+//    @ExceptionHandler(CarNotFoundException.class)
+//    public final ResponseEntity<ErrorDetails> handleCarNotFoundException(Exception ex, WebRequest request) {
+//        ErrorDetails errorDetails=new ErrorDetails(LocalDateTime.now(),
+//                ex.getMessage(),request.getDescription(false));
+//        return new ResponseEntity<ErrorDetails>(errorDetails, HttpStatus.BAD_REQUEST);
+//    }
+
+    @ExceptionHandler(CarNotFoundException.class)
+    public final ResponseEntity<ErrorDetails> handleCarNotFoundException(CarNotFoundException ex, WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(InvalidSeatingCapacityException.class)
-    public final ResponseEntity<ErrorDetails> handleUserNotFoundException(Exception ex, WebRequest request) {
-        ErrorDetails errorDetails=new ErrorDetails(LocalDateTime.now(),
-                ex.getMessage(),request.getDescription(false));
-        return new ResponseEntity<ErrorDetails>(errorDetails, HttpStatus.NOT_FOUND);
-    }
 
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                                                                  HttpHeaders headers, HttpStatus status,
-                                                                  WebRequest request) {
-        ErrorDetails errorDetails=new ErrorDetails(LocalDateTime.now(),
-                ex.getMessage(),request.getDescription(false));
-        return new ResponseEntity(errorDetails, HttpStatus.BAD_REQUEST);
-    }
+//    @ExceptionHandler(InvalidSeatingCapacityException.class)
+//    public final ResponseEntity<ErrorDetails> handleUserNotFoundException(Exception ex, WebRequest request) {
+//        ErrorDetails errorDetails=new ErrorDetails(LocalDateTime.now(),
+//                ex.getMessage(),request.getDescription(false));
+//        return new ResponseEntity<ErrorDetails>(errorDetails, HttpStatus.NOT_FOUND);
+//    }
+
+//    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+//                                                                  HttpHeaders headers, HttpStatus status,
+//                                                                  WebRequest request) {
+//        ErrorDetails errorDetails=new ErrorDetails(LocalDateTime.now(),
+//                ex.getMessage(),request.getDescription(false));
+//        return new ResponseEntity(errorDetails, HttpStatus.BAD_REQUEST);
+//    }
 }
