@@ -31,7 +31,7 @@ public class CarController {
 
     @RequestMapping("list-available-cars")
     public String listAllAvailableCarsForBooking(@RequestParam int seatingCapacity,ModelMap modelMap) {
-        List<Car> cars=carRepository.findBySeatingCapacityAndAvailableForBookingTrue(seatingCapacity);
+        List<Car> cars=carRepository.findBySeatingCapacityAndAvailableForBooking(seatingCapacity, "Y");
         modelMap.put("cars",cars);
         return "listCarsAvailableForBooking";
     }
@@ -49,7 +49,7 @@ public class CarController {
             throw  new InvalidSeatingCapacityException("Allowed capacities are: {3,4,7}");
         }
 
-        car.setAvailableForBooking(true);
+        car.setAvailableForBooking("Y");
         carRepository.save(car);
         return "redirect:list-cars";
     }

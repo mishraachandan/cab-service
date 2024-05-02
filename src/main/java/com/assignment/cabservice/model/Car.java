@@ -17,11 +17,13 @@ public class Car {
     @Id
     @GeneratedValue
     private Integer id;
-    private String model;
-    private String color;
-    private Integer seatingCapacity;
-    private boolean availableForBooking;
+    private String availableForBooking;
+    private String name;
     private Integer driverId;
+    private String model;
+    private Integer seatingCapacity;
+
+
 
     @Override
     public final boolean equals(Object o) {

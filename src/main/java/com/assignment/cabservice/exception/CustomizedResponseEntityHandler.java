@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalDateTime;
@@ -33,6 +34,13 @@ public class CustomizedResponseEntityHandler{
     public final ResponseEntity<ErrorDetails> handleCarNotFoundException(CarNotFoundException ex, WebRequest request) {
         ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public final ResponseEntity<ErrorDetails> handleArgumentMismatchException(MethodArgumentTypeMismatchException ex, WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(),
+                "You have passed wrong number of parameters in the url request.", request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_GATEWAY);
     }
 
 

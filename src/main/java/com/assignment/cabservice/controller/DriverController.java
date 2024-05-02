@@ -1,23 +1,26 @@
 package com.assignment.cabservice.controller;
 
 import com.assignment.cabservice.dao.DriverUseCarsDao;
+import com.assignment.cabservice.dto.DriverDto;
+import com.assignment.cabservice.exception.DriverAlreadyAvailableException;
 import com.assignment.cabservice.model.Car;
 import com.assignment.cabservice.model.CarRequest;
 import com.assignment.cabservice.model.Driver;
 import com.assignment.cabservice.repository.CarRepository;
 import com.assignment.cabservice.repository.CarRequestRepository;
 import com.assignment.cabservice.repository.DriverRepository;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 public class DriverController {
+
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     @Autowired
     private DriverRepository driverRepository;
     @Autowired
@@ -60,9 +63,31 @@ public class DriverController {
 
     //public String addNewTodo(@Valid Todo todo, ModelMap modelMap, BindingResult bindingResult) {
     @RequestMapping(value="add-driver",method= RequestMethod.POST)
-    public String addNewDriver(Driver driver) {
-        driver.setPassword("$2a$12$TLJOLK.QjLRdxOHew1XMT.eYa2Xr5HMHaT14fRoI3gMOIZijNu9F2");//123
-        driver.setUsedCarIds(""+driver.getAssignedCarId());
+    public String addNewDriver(@RequestBody DriverDto driverDto) throws Exception {
+
+        Driver isExistingDriver = driverRepository.findByUserName(driverDto.getUsername());
+        if(isExistingDriver != null){
+            throw new DriverAlreadyAvailableException("Sorry, please use a different username " +
+                    "this username is already taken by different user.");
+        }
+        Driver driver = new Driver();
+        driver.setPassword(driverDto.getUsername() + "@" + generateRandomString(4));
+        driver.setUsername(driverDto.getUsername());
+        driver.setFirstName(driverDto.getFirstName());
+        driver.setLastName(driverDto.getLastName());
+        driver.setDriverAvailable(true);
+        if(driver.getAssignedCarId() != null){
+            driver.setUsedCarIds(""+driver.getAssignedCarId());
+        }
+
+
+        List<Integer> allCarIdsAvailableForBooking = carRepository.findAllCarIdsAvaialableForBooking();
+
+        if(allCarIdsAvailableForBooking.isEmpty()){
+            throw new Exception("Sorry no cars are available that can be assigned to the driver.");
+        }
+        driver.setAssignedCarId(allCarIdsAvailableForBooking.get(0));
+
         Driver savedDriver=driverRepository.save(driver);
         Car car=carRepository.findById(driver.getAssignedCarId()).get();
         car.setDriverId(savedDriver.getId());
@@ -76,7 +101,7 @@ public class DriverController {
                 new Exception("Driver not found with driverID - " + id));
         Car car=carRepository.findById(driver.getAssignedCarId()).orElseThrow(() ->
                 new Exception("Car not found with carID - " + driver.getAssignedCarId()));
-        car.setAvailableForBooking(true);
+        car.setAvailableForBooking("Y");
         car.setDriverId(null);
         carRepository.save(car);
         driverRepository.deleteById(id);
@@ -94,4 +119,17 @@ public class DriverController {
         return "redirect:list-car-requests";
     }
 
+
+
+
+    // Method to generate a random string of specified length
+    public static String generateRandomString(int length) {
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(CHARACTERS.length());
+            sb.append(CHARACTERS.charAt(index));
+        }
+        return sb.toString();
+    }
 }

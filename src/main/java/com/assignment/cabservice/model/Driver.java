@@ -1,8 +1,20 @@
 package com.assignment.cabservice.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import lombok.*;
+import org.hibernate.proxy.HibernateProxy;
+
+import java.util.Objects;
 
 @Entity
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class Driver {
     @Id
     @GeneratedValue
@@ -11,62 +23,24 @@ public class Driver {
     private String password;
     private Integer assignedCarId;
     private String usedCarIds;
+    private boolean isDriverAvailable;
+    private String firstName;
+    private String lastName;
 
-    public Driver() {}
-    public Driver(Integer id, String username, Integer assignedCarId, String usedCarIds) {
-        this.id = id;
-        this.username = username;
-        this.assignedCarId = assignedCarId;
-        this.usedCarIds = usedCarIds;
-    }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getUsedCarIds() {
-        return usedCarIds;
-    }
-
-    public void setUsedCarIds(String usedCarIds) {
-        this.usedCarIds = usedCarIds;
-    }
-
-    public Integer getAssignedCarId() {
-        return assignedCarId;
-    }
-
-    public void setAssignedCarId(Integer assignedCarId) {
-        this.assignedCarId = assignedCarId;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
+        Driver driver = (Driver) o;
+        return getId() != null && Objects.equals(getId(), driver.getId());
     }
 
     @Override
-    public String toString() {
-        return "Driver{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", assignedCarId=" + assignedCarId +
-                ", usedCarIds='" + usedCarIds + '\'' +
-                '}';
+    public final int hashCode() {
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }
