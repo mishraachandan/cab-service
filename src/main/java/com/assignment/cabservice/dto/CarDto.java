@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @JsonFilter("CabFilter")
 public class CarDto {
 
+    private String carId;
     private String availableForBooking;
     private String name;
     private String model;

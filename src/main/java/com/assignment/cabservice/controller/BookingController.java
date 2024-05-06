@@ -47,8 +47,17 @@ public class BookingController {
         List<Car> car= carRepository.findByCarId(bookCarRequest.getCarId());
         BookingDetailDao bookingDetailDao;
 
+        if(!car.isEmpty() && car.get(0) != null){
+            boolean isBooked = car.get(0).getAvailableForBooking().equalsIgnoreCase("Booked") ? true : false;
+            if(isBooked){
+                throw new CarNotFoundException("Sorry, " + bookCarRequest.getUserName() + " this is not available for " +
+                        "booking as it is already occupied. Please check with different cars/cabs available. Sorry, " +
+                        "for inconveniece.");
+            }
+        }
+
         if(car.isEmpty()){
-            throw  new CarNotFoundException("Car not found for the particular Car Id. Please check and give the correct Id.");
+            throw new CarNotFoundException("Car not found for the particular Car Id. Please check and give the correct Id.");
         }
         else{
             if(car.get(0) != null)
@@ -101,7 +110,7 @@ public class BookingController {
         List<CarDto> carDtos = new ArrayList<>();
         for(Car car : carList){
             CarDto carDto = CarDto.builder().name(car.getName()).name(car.getName()).availableForBooking(car.getAvailableForBooking())
-                    .model(car.getModel()).seatingCapacity(car.getSeatingCapacity()).build();
+                    .model(car.getModel()).seatingCapacity(car.getSeatingCapacity()).carId(String.valueOf(car.getId())).build();
             carDtos.add(carDto);
         }
         if(carList.isEmpty()){
