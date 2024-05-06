@@ -42,13 +42,11 @@ public class BookingController {
 
         // requirement :::
         // get the number of seater, budget, isavailable for booking
-
-
         List<Car> car= carRepository.findByCarId(bookCarRequest.getCarId());
         BookingDetailDao bookingDetailDao;
 
         if(!car.isEmpty() && car.get(0) != null){
-            boolean isBooked = car.get(0).getAvailableForBooking().equalsIgnoreCase("Booked") ? true : false;
+            boolean isBooked = car.get(0).getAvailableForBooking().equalsIgnoreCase("N") ? true : false;
             if(isBooked){
                 throw new CarNotFoundException("Sorry, " + bookCarRequest.getUserName() + " this is not available for " +
                         "booking as it is already occupied. Please check with different cars/cabs available. Sorry, " +
@@ -64,7 +62,7 @@ public class BookingController {
             car.get(0).setAvailableForBooking("N");
             Booking newBooking = new Booking();
             newBooking.setCarId(bookCarRequest.getCarId());
-            newBooking.setDriverId(car.get(0).getDriverId());
+            newBooking.setDriverId(car.get(0).getDriver().getId());
             newBooking.setStatus("Booked");
             newBooking.setUsername(bookCarRequest.getUserName());
             carRepository.save(car.get(0));

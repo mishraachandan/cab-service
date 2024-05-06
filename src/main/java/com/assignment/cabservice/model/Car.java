@@ -1,14 +1,14 @@
 package com.assignment.cabservice.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.util.Objects;
 
-@Data
+@Getter
+@Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -19,10 +19,12 @@ public class Car {
     private Integer id;
     private String availableForBooking;
     private String name;
-    private Integer driverId;
     private String model;
     private Integer seatingCapacity;
 
+    @OneToOne
+    @JoinColumn(name = "driver_id", referencedColumnName = "id")
+    private Driver driver;
 
 
     @Override

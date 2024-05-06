@@ -68,15 +68,15 @@ public class CarController {
     public String assignDriverToCar(@PathVariable int carId,@PathVariable int driverId) throws Exception {
         Driver driver=driverRepository.findById(driverId).orElseThrow(() ->
                 new Exception("Driver not found with driverID - " + driverId));
-        int previousAssignedCarId=driver.getAssignedCarId();
-        driver.setAssignedCarId(carId);
+        int previousAssignedCarId=driver.getCar().getId();
+        driver.setCar(Car.builder().id(carId).build());
         driver.setUsedCarIds(driver.getUsedCarIds()+","+carId);
         Car previousAssignedCar=carRepository.findById(previousAssignedCarId).orElseThrow(() ->
                 new Exception("Car not found with carID - " + previousAssignedCarId));;
-        previousAssignedCar.setDriverId(null);
+        previousAssignedCar.setDriver(Driver.builder().build());
         Car car=carRepository.findById(carId).orElseThrow(() ->
                 new Exception("Car not found with carID - " + carId));;
-        car.setDriverId(driverId);
+        car.setDriver(Driver.builder().id(driverId).build());
         carRepository.save(previousAssignedCar);
         carRepository.save(car);
         driverRepository.save(driver);

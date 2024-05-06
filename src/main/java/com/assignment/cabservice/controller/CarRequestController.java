@@ -30,7 +30,7 @@ public class CarRequestController {
                                        @RequestParam int carId) throws Exception {
         Driver driver=driverRepository.findById(driverId).orElseThrow(() ->
                 new Exception("Driver not found with driverID - " + driverId));
-        driver.setAssignedCarId(carId);
+        driver.setCar(Car.builder().id(carId).build());
         driver.setUsedCarIds(driver.getUsedCarIds()+","+carId);
         Car car=carRepository.findById(carId).orElseThrow(() ->
                 new Exception("Car not found with carID - " + carId));
@@ -38,7 +38,7 @@ public class CarRequestController {
         CarRequest carRequest=carRequestRepository.findById(requestId).orElseThrow(() ->
                 new Exception("Request not found with requestID - " + requestId));
         carRequest.setRequestStatus("APPROVED");
-        car.setDriverId(driverId);
+        car.setDriver(Driver.builder().id(driverId).build());
         carRequestRepository.save(carRequest);
         carRepository.save(car);
         driverRepository.save(driver);

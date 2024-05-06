@@ -10,5 +10,5 @@ public interface DriverRepository extends JpaRepository<Driver,Integer> {
     @Query(nativeQuery = true, value = "Select assigned_car_id from driver")
     List<String> getAllAssignedIds();
 
-    Driver findByUserName(String username);
+    Driver findByUsername(String username);
 }

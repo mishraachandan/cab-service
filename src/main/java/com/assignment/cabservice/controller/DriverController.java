@@ -65,7 +65,7 @@ public class DriverController {
     @RequestMapping(value="add-driver",method= RequestMethod.POST)
     public String addNewDriver(@RequestBody DriverDto driverDto) throws Exception {
 
-        Driver isExistingDriver = driverRepository.findByUserName(driverDto.getUsername());
+        Driver isExistingDriver = driverRepository.findByUsername(driverDto.getUsername());
         if(isExistingDriver != null){
             throw new DriverAlreadyAvailableException("Sorry, please use a different username " +
                     "this username is already taken by different user.");
@@ -76,8 +76,8 @@ public class DriverController {
         driver.setFirstName(driverDto.getFirstName());
         driver.setLastName(driverDto.getLastName());
         driver.setDriverAvailable(true);
-        if(driver.getAssignedCarId() != null){
-            driver.setUsedCarIds(""+driver.getAssignedCarId());
+        if(driver.getCar().getId() != null){
+            driver.setUsedCarIds(""+driver.getCar().getId());
         }
 
 
@@ -86,11 +86,11 @@ public class DriverController {
         if(allCarIdsAvailableForBooking.isEmpty()){
             throw new Exception("Sorry no cars are available that can be assigned to the driver.");
         }
-        driver.setAssignedCarId(allCarIdsAvailableForBooking.get(0));
+        driver.setCar(Car.builder().id(allCarIdsAvailableForBooking.get(0)).build());
 
         Driver savedDriver=driverRepository.save(driver);
-        Car car=carRepository.findById(driver.getAssignedCarId()).get();
-        car.setDriverId(savedDriver.getId());
+        Car car=carRepository.findById(driver.getCar().getId()).get();
+        car.setDriver(Driver.builder().id(savedDriver.getId()).build());
         carRepository.save(car);
         return "redirect:list-drivers";
     }
@@ -99,10 +99,10 @@ public class DriverController {
     public String deleteDriver(@RequestParam int id) throws Exception {
         Driver driver=driverRepository.findById(id).orElseThrow(() ->
                 new Exception("Driver not found with driverID - " + id));
-        Car car=carRepository.findById(driver.getAssignedCarId()).orElseThrow(() ->
-                new Exception("Car not found with carID - " + driver.getAssignedCarId()));
+        Car car=carRepository.findById(driver.getCar().getId()).orElseThrow(() ->
+                new Exception("Car not found with carID - " + driver.getCar().getId()));
         car.setAvailableForBooking("Y");
-        car.setDriverId(null);
+        car.setDriver(Driver.builder().build());
         carRepository.save(car);
         driverRepository.deleteById(id);
         return "redirect:list-drivers";
