@@ -6,8 +6,10 @@ import com.assignment.cabservice.exception.CarNotFoundException;
 import com.assignment.cabservice.exception.InvalidSeatingCapacityException;
 import com.assignment.cabservice.model.Booking;
 import com.assignment.cabservice.model.Car;
+import com.assignment.cabservice.model.Driver;
 import com.assignment.cabservice.repository.BookingRepository;
 import com.assignment.cabservice.repository.CarRepository;
+import com.assignment.cabservice.repository.DriverRepository;
 import com.assignment.cabservice.requests.BookCarRequest;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.print.Book;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +38,9 @@ public class BookingController {
     @Autowired
     private CarRepository carRepository;
 
+    @Autowired
+    private DriverRepository driverRepository;
+
     //http://localhost:8080/book-car?carId=503&username=cust1
     @PostMapping(value = "book-car", consumes = "application/json")
 //    @ResponseBody
@@ -42,9 +48,28 @@ public class BookingController {
 
         // requirement :::
         // get the number of seater, budget, isavailable for booking
+
+
         List<Car> car= carRepository.findByCarId(bookCarRequest.getCarId());
         BookingDetailDao bookingDetailDao;
 
+//        Book car>
+
+//        To book the car >>
+//
+//        1st thing to check >> If car is available?
+//
+//        If car is available we will book it and then assign driver to it.
+//
+//        But we can only confirm the booking if the driver is available as of now.
+//
+//        if not available then give exception message.
+//
+//        If the driver is available then book the car and assign the driver to that car.
+
+
+
+        // If noo car is available.
         if(!car.isEmpty() && car.get(0) != null){
             boolean isBooked = car.get(0).getAvailableForBooking().equalsIgnoreCase("N") ? true : false;
             if(isBooked){
@@ -54,17 +79,55 @@ public class BookingController {
             }
         }
 
+        // If the car is not present.
         if(car.isEmpty()){
             throw new CarNotFoundException("Car not found for the particular Car Id. Please check and give the correct Id.");
         }
         else{
+
+            // proceed with the booking.
             if(car.get(0) != null)
             car.get(0).setAvailableForBooking("N");
+
+
             Booking newBooking = new Booking();
             newBooking.setCarId(bookCarRequest.getCarId());
-            newBooking.setDriverId(car.get(0).getDriver().getId());
+
+            // to set the driver.
+
+            // to get the driver id.
+
+            // TODO : will need to optimise this at a later point of time.
+            List<Driver> availableDrivers =  driverRepository.findAll();
+            Driver newDriver = null;
+            if(availableDrivers.isEmpty()){
+                // Create a new driver
+                newDriver = Driver.builder().firstName("ContractDriver").lastName("").isDriverAvailable(false)
+                        .car(car.get(0)).username("subcon").password("temp").assignedCarId(car.get(0).getId()).
+                        build();
+                driverRepository.save(newDriver);
+            }
+            else{
+                // check for the drivers who are available.
+                for(Driver driver : availableDrivers){
+                    if(driver.isDriverAvailable()){
+                        newDriver = driver;
+                    }
+                }
+
+                if(newDriver == null){
+                    newDriver = Driver.builder().firstName("ContractDriver").lastName("").isDriverAvailable(false)
+                            .car(car.get(0)).username("subcon").password("temp").assignedCarId(car.get(0).getId()).
+                            build();
+                    driverRepository.save(newDriver);
+                }
+            }
+            newBooking.setDriverId(newDriver.getId());
             newBooking.setStatus("Booked");
             newBooking.setUsername(bookCarRequest.getUserName());
+            if(car.get(0).getDriver().getId() != newDriver.getId() ){
+                car.get(0).setDriver(newDriver);
+            }
             carRepository.save(car.get(0));
             bookingRepository.save(newBooking);
             String cancelCarUrl="localhost:8080/cancel-car?bookingId="+newBooking.getId();

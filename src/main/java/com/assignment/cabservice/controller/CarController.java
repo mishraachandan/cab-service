@@ -8,11 +8,9 @@ import com.assignment.cabservice.repository.DriverRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 public class CarController {
@@ -64,24 +62,24 @@ public class CarController {
 
 
     //localhost:8080/assign-car/carId/503/driverId/152
-    @GetMapping(value="assign-car/carId/{carId}/driverId/{driverId}")
-    public String assignDriverToCar(@PathVariable int carId,@PathVariable int driverId) throws Exception {
-        Driver driver=driverRepository.findById(driverId).orElseThrow(() ->
-                new Exception("Driver not found with driverID - " + driverId));
-        int previousAssignedCarId=driver.getCar().getId();
-        driver.setCar(Car.builder().id(carId).build());
-        driver.setUsedCarIds(driver.getUsedCarIds()+","+carId);
-        Car previousAssignedCar=carRepository.findById(previousAssignedCarId).orElseThrow(() ->
-                new Exception("Car not found with carID - " + previousAssignedCarId));;
-        previousAssignedCar.setDriver(Driver.builder().build());
-        Car car=carRepository.findById(carId).orElseThrow(() ->
-                new Exception("Car not found with carID - " + carId));;
-        car.setDriver(Driver.builder().id(driverId).build());
-        carRepository.save(previousAssignedCar);
-        carRepository.save(car);
-        driverRepository.save(driver);
-        return "redirect:/list-cars";
-    }
+//    @GetMapping(value="assign-car/carId/{carId}/driverId/{driverId}")
+//    public String assignDriverToCar(@PathVariable int carId,@PathVariable int driverId) throws Exception {
+//        Driver driver=driverRepository.findById(driverId).orElseThrow(() ->
+//                new Exception("Driver not found with driverID - " + driverId));
+//        int previousAssignedCarId=driver.getCar().getId();
+//        driver.setCar(Car.builder().id(carId).build());
+//        driver.setAssignedCarId(driver.getAssignedCarId()+","+carId);
+//        Car previousAssignedCar=carRepository.findById(previousAssignedCarId).orElseThrow(() ->
+//                new Exception("Car not found with carID - " + previousAssignedCarId));;
+//        previousAssignedCar.setDriver(Driver.builder().build());
+//        Car car=carRepository.findById(carId).orElseThrow(() ->
+//                new Exception("Car not found with carID - " + carId));;
+//        car.setDriver(Driver.builder().id(driverId).build());
+//        carRepository.save(previousAssignedCar);
+//        carRepository.save(car);
+//        driverRepository.save(driver);
+//        return "redirect:/list-cars";
+//    }
 
     /*@GetMapping(path="/jpa/users/{id}/posts")
     public List<Post> retrievePostsForUser(@PathVariable int id) {

@@ -11,6 +11,8 @@ import com.assignment.cabservice.repository.CarRequestRepository;
 import com.assignment.cabservice.repository.DriverRepository;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -35,64 +37,48 @@ public class DriverController {
         return "listDrivers";
     }
 
-    @GetMapping("driver/used-cars")
-    @ResponseBody
-    public DriverUseCarsDao getCarsUsedByDriver(@RequestParam int driverId) throws Exception {
-        Optional<Driver> driverOptional=driverRepository.findById(driverId);
-        if(driverOptional.isPresent()) {
-            Driver driver=driverOptional.get();
-            String[] usedCars=driver.getUsedCarIds().split(",");
-            List<Integer> carIds=new ArrayList<>();
-            for(String cardId:usedCars) {
-                carIds.add(Integer.parseInt(cardId));
-            }
+//    @GetMapping("driver/used-cars")
+//    @ResponseBody
+//    public DriverUseCarsDao getCarsUsedByDriver(@RequestParam int driverId) throws Exception {
+//        Optional<Driver> driverOptional=driverRepository.findById(driverId);
+//        if(driverOptional.isPresent()) {
+//            Driver driver=driverOptional.get();
+//            String[] usedCars=driver.getAssignedCarId().split(",");
+//            List<Integer> carIds=new ArrayList<>();
+//            for(String cardId:usedCars) {
+//                carIds.add(Integer.parseInt(cardId));
+//            }
+//
+//            List<Car> carList=carRepository.findByIdIn(carIds);
+//            DriverUseCarsDao driverUseCarsDao=new DriverUseCarsDao(driverId,driver.getUsername(),carList);
+//
+//            return driverUseCarsDao;
+//        }
+//
+//        throw new Exception("Driver not found");
+//    }
 
-            List<Car> carList=carRepository.findByIdIn(carIds);
-            DriverUseCarsDao driverUseCarsDao=new DriverUseCarsDao(driverId,driver.getUsername(),carList);
-
-            return driverUseCarsDao;
-        }
-
-        throw new Exception("Driver not found");
-    }
-
-    @RequestMapping(value="add-driver",method= RequestMethod.GET)
-    public String showNewDriverPage(Driver driver) {
-        return "driver";
-    }
+//    @RequestMapping(value="add-driver",method= RequestMethod.GET)
+//    public String showNewDriverPage(Driver driver) {
+//        return "driver";
+//    }
 
     //public String addNewTodo(@Valid Todo todo, ModelMap modelMap, BindingResult bindingResult) {
-    @RequestMapping(value="add-driver",method= RequestMethod.POST)
-    public String addNewDriver(@RequestBody DriverDto driverDto) throws Exception {
+    @PostMapping(value="add-driver", consumes = "application/json")
+    public ResponseEntity<String> addNewDriver(@RequestBody DriverDto driverDto) throws DriverAlreadyAvailableException {
 
         Driver isExistingDriver = driverRepository.findByUsername(driverDto.getUsername());
-        if(isExistingDriver != null){
+        if(isExistingDriver != null && !isExistingDriver.getUsername().equalsIgnoreCase("subcon")){
             throw new DriverAlreadyAvailableException("Sorry, please use a different username " +
                     "this username is already taken by different user.");
         }
-        Driver driver = new Driver();
-        driver.setPassword(driverDto.getUsername() + "@" + generateRandomString(4));
-        driver.setUsername(driverDto.getUsername());
-        driver.setFirstName(driverDto.getFirstName());
-        driver.setLastName(driverDto.getLastName());
-        driver.setDriverAvailable(true);
-        if(driver.getCar().getId() != null){
-            driver.setUsedCarIds(""+driver.getCar().getId());
-        }
+        Driver driver = Driver.builder().password(driverDto.getUsername() + "@" + generateRandomString(4))
+                .username(driverDto.getUsername()).firstName(driverDto.getFirstName()).lastName(driverDto.getLastName())
+                .isDriverAvailable(true).build();
+        driverRepository.save(driver);
 
-
-        List<Integer> allCarIdsAvailableForBooking = carRepository.findAllCarIdsAvaialableForBooking();
-
-        if(allCarIdsAvailableForBooking.isEmpty()){
-            throw new Exception("Sorry no cars are available that can be assigned to the driver.");
-        }
-        driver.setCar(Car.builder().id(allCarIdsAvailableForBooking.get(0)).build());
-
-        Driver savedDriver=driverRepository.save(driver);
-        Car car=carRepository.findById(driver.getCar().getId()).get();
-        car.setDriver(Driver.builder().id(savedDriver.getId()).build());
-        carRepository.save(car);
-        return "redirect:list-drivers";
+        return new ResponseEntity<>(String.format("Welcome, %s! you details are added. We will inform you for " +
+                "your assigned car once new booking comes.", driverDto.getUsername()), HttpStatus.OK);
     }
     //http://localhost:8080/delete-driver?id=102
     @RequestMapping(value="delete-driver")

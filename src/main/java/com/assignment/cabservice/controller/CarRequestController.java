@@ -24,26 +24,26 @@ public class CarRequestController {
     @Autowired
     CarRequestRepository carRequestRepository;
 
-    @RequestMapping("approve-request")
-    public String approveDriverRequest(@RequestParam int requestId,
-                                       @RequestParam int driverId,
-                                       @RequestParam int carId) throws Exception {
-        Driver driver=driverRepository.findById(driverId).orElseThrow(() ->
-                new Exception("Driver not found with driverID - " + driverId));
-        driver.setCar(Car.builder().id(carId).build());
-        driver.setUsedCarIds(driver.getUsedCarIds()+","+carId);
-        Car car=carRepository.findById(carId).orElseThrow(() ->
-                new Exception("Car not found with carID - " + carId));
-
-        CarRequest carRequest=carRequestRepository.findById(requestId).orElseThrow(() ->
-                new Exception("Request not found with requestID - " + requestId));
-        carRequest.setRequestStatus("APPROVED");
-        car.setDriver(Driver.builder().id(driverId).build());
-        carRequestRepository.save(carRequest);
-        carRepository.save(car);
-        driverRepository.save(driver);
-        return "redirect:/list-car-requests";
-    }
+//    @RequestMapping("approve-request")
+//    public String approveDriverRequest(@RequestParam int requestId,
+//                                       @RequestParam int driverId,
+//                                       @RequestParam int carId) throws Exception {
+//        Driver driver=driverRepository.findById(driverId).orElseThrow(() ->
+//                new Exception("Driver not found with driverID - " + driverId));
+//        driver.setCar(Car.builder().id(carId).build());
+//        driver.setAssignedCarId(driver.getAssignedCarId()+","+carId);
+//        Car car=carRepository.findById(carId).orElseThrow(() ->
+//                new Exception("Car not found with carID - " + carId));
+//
+//        CarRequest carRequest=carRequestRepository.findById(requestId).orElseThrow(() ->
+//                new Exception("Request not found with requestID - " + requestId));
+//        carRequest.setRequestStatus("APPROVED");
+//        car.setDriver(Driver.builder().id(driverId).build());
+//        carRequestRepository.save(carRequest);
+//        carRepository.save(car);
+//        driverRepository.save(driver);
+//        return "redirect:/list-car-requests";
+//    }
 
     @RequestMapping("reject-request")
     public String rejectDriverRequest(@RequestParam int requestId) throws Exception {
