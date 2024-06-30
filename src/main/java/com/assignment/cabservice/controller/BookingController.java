@@ -11,10 +11,12 @@ import com.assignment.cabservice.repository.BookingRepository;
 import com.assignment.cabservice.repository.CarRepository;
 import com.assignment.cabservice.repository.DriverRepository;
 import com.assignment.cabservice.requests.BookCarRequest;
+import com.assignment.cabservice.service.CacheService;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -40,6 +42,9 @@ public class BookingController {
 
     @Autowired
     private DriverRepository driverRepository;
+
+    @Autowired
+    private CacheService cacheService;
 
     //http://localhost:8080/book-car?carId=503&username=cust1
     @PostMapping(value = "book-car", consumes = "application/json")
@@ -133,11 +138,11 @@ public class BookingController {
             String cancelCarUrl="localhost:8080/cancel-car?bookingId="+newBooking.getId();
             bookingDetailDao=new BookingDetailDao(newBooking,cancelCarUrl);
         }
-
         return new ResponseEntity<>(bookingDetailDao, HttpStatus.OK);
     }
 
     @GetMapping(value = "/allCabs")
+    @Cacheable("allCabs")
     public ResponseEntity<MappingJacksonValue> getAllCabsAvailable(){
         List<Car> carList = carRepository.findByAvailableForBooking();
         if(carList.isEmpty()){
@@ -159,6 +164,7 @@ public class BookingController {
 
         return new ResponseEntity<>(mappingJacksonValue, HttpStatus.OK);
     }
+
     @GetMapping(value = "/availableCabs")
     public ResponseEntity<Object> getAvailableDesiredVehicle(@RequestParam int numberOfSeater){
         if(numberOfSeater == 0 || numberOfSeater > 8){
@@ -204,5 +210,11 @@ public class BookingController {
         carRepository.save(car);
         bookingRepository.deleteById(bookingId);
         return new ResponseEntity<>("<h1>Booking Canceled Successfully</h1>", HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/test")
+    public ResponseEntity<String> getCaches(){
+        System.out.println("Printing the cache in console:: "+cacheService.getAllCacheEntries().toString());
+        return new ResponseEntity<>(cacheService.getAllCacheEntries().toString(), HttpStatus.OK);
     }
 }
