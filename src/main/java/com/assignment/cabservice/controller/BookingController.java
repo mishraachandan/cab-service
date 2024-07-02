@@ -166,12 +166,17 @@ public class BookingController {
     }
 
     @GetMapping(value = "/availableCabs")
-    public ResponseEntity<Object> getAvailableDesiredVehicle(@RequestParam int numberOfSeater){
+    public ResponseEntity<String> getAvailableDesiredVehicle(@RequestParam int numberOfSeater){
         if(numberOfSeater == 0 || numberOfSeater > 8){
             throw new CarNotFoundException("Please enter the correct seat capacity that is required. We only serve for 5" +
                     ",3,8 and 2 seater bookings");
         }
+        String result = getStringResponseEntity(numberOfSeater);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 
+    @Cacheable(value = "availableCabs", key = "#numberOfSeater")
+    private String getStringResponseEntity(int numberOfSeater) {
         List<Car> carList = carRepository.findBySeatingCapacityAndAvailableForBooking(numberOfSeater, "Y");
 
         List<CarDto> carDtos = new ArrayList<>();
@@ -181,16 +186,16 @@ public class BookingController {
             carDtos.add(carDto);
         }
         if(carList.isEmpty()){
-            return new ResponseEntity<>("Sorry, no cars are available for the desired selection. Please try" +
-                    " with a different seating capacity.", HttpStatus.OK);
+            return "Sorry, no cars are available for the desired selection. Please try" +
+                    " with a different seating capacity.";
         }
 
         String result = carDtos.stream()
                 .map(CarDto::getName) // Assuming CarDTO has overridden toString() method
                 .collect(Collectors.joining("\n")); // Join elements with newline separator
 
-        return new ResponseEntity<>("Here is the list of available cabs for booking for the desired seat selection" +
-                ":\n" + result, HttpStatus.OK);
+        return "Here is the list of available cabs for booking for the desired seat selection" +
+                ":\n" + result;
     }
 
     @RequestMapping("cancel-car")

@@ -4,16 +4,18 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 @Getter
 @Setter
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Entity
-public class Car {
+public class Car implements Serializable {
+
+    private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue
     private Integer id;
@@ -22,7 +24,7 @@ public class Car {
     private String model;
     private Integer seatingCapacity;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "driver_id", referencedColumnName = "id")
     private Driver driver;
 
